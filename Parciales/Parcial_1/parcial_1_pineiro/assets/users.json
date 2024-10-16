@@ -1,0 +1,35 @@
+[
+    {
+        "age": "24",
+        "id": 0,
+        "email": "jpineiro@frba.utn.edu.ar",
+        "name": "Joaquin",
+        "last_name": "Piñeiro",
+        "location": "Argentina",
+        "city": "Capital Federal",
+        "profile_img": null,
+        "password": "123"
+    },
+    {
+        "age": "24",
+        "id": 1,
+        "email": "adomnguez@frba.utn.edu.ar",
+        "name": "Alejo",
+        "last_name": "Dominguez Nimo",
+        "location": "Argentina",
+        "city": "Capital Federal",
+        "profile_img": null,
+        "password": "321"
+    },
+    {
+        "age": "24",
+        "id": 2,
+        "email": "mmarfisi@frba.utn.edu.ar",
+        "name": "Matias",
+        "last_name": "Marfisi",
+        "location": "Argentina",
+        "city": "Capital Federal",
+        "profile_img": null,
+        "password": "213"
+    }
+]
