@@ -1,20 +1,21 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:floor/floor.dart';
 
 @entity
 class User {
   @primaryKey
-  final int? id;
-  String name;
-  String lastName;
-  String email;
-  String password;
-  String age;
-  String location;
-  String city;
-  String? profileImg;
+  final String? id;
+  final String name;
+  final String lastName;
+  final String email;
+  final String password;
+  final String age;
+  final String location;
+  final String city;
+  final String? profileImg;
 
   User(
-      {required this.id,
+      {this.id,
       required this.name,
       required this.lastName,
       required this.email,
@@ -24,17 +25,34 @@ class User {
       required this.password,
       required this.profileImg});
 
-  factory User.fromJson(Map<String, dynamic> json) {
+  factory User.fromFirestore(
+    DocumentSnapshot<Map<String, dynamic>> snapshot,
+    SnapshotOptions? options,
+  ) {
+    final data = snapshot.data();
     return User(
-      id: json['id'],
-      name: json['name'],
-      lastName: json['last_name'],
-      email: json['email'],
-      password: json['password'],
-      age: json['age'],
-      location: json['location'],
-      city: json['city'],
-      profileImg: json['profile_img'] != null ? json['profile_img'] : null,
+      id: snapshot.id,
+      name: data?['name'],
+      lastName: data?['last_name'],
+      email: data?['email'],
+      age: data?['age'],
+      location: data?['location'],
+      city: data?['city'],
+      password: data?['password'],
+      profileImg: data?['profile_image'],
     );
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      "name": name,
+      "last_name": lastName,
+      "email": email,
+      "age": location,
+      "location": location,
+      "city": city,
+      "password": password,
+      "profile_image": profileImg,
+    };
   }
 }

@@ -1,21 +1,25 @@
 import 'dart:developer';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:parcial_1_pineiro/config/database/database.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:parcial_1_pineiro/config/router/app_router.dart';
-import 'package:parcial_1_pineiro/domain/models/app_theme.dart';
-import 'package:parcial_1_pineiro/presentation/providers/theme_provider.dart';
+import 'package:parcial_1_pineiro/viewmodels/providers.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-late AppDatabase database;
-
+late FirebaseFirestore dataBaseFirestore;
+//TOKEN 1//0hNau9r4R173_CgYIARAAGBESNwF-L9Ir5KOjdNq4czfMqRY2Rg27vk0P8lZ9Pi0kfnViHmdJQOMkqhLTJcTuWBjfZ7o972S7bRk
 void main() async {
   // Ensure that the binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize the database and measure initialization time
   final stopwatch = Stopwatch()..start();
-  database = await AppDatabase.create('app_database.db');
+  dataBaseFirestore = FirebaseFirestore.instance;
   stopwatch.stop();
   log('Database initialized in ${stopwatch.elapsed.inMilliseconds}ms');
 
@@ -27,11 +31,11 @@ class MainApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, ref) {
-    AppTheme appTheme = ref.watch(themeNotifierProvider);
+    final config = ref.watch(configViewModelProvider);
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,
-      theme: appTheme.getTheme(),
+      theme: ref.read(configViewModelProvider.notifier).getTheme(),
     );
   }
 }

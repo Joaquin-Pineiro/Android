@@ -7,176 +7,153 @@ import 'package:parcial_1_pineiro/presentation/utils/base_state_screen.dart';
 import 'package:parcial_1_pineiro/presentation/utils/functions.dart';
 import 'package:parcial_1_pineiro/viewmodels/providers.dart';
 
-class BreedInfoField {
+class UserInfoField {
   final String field;
   final TextEditingController controller;
   final Icon? icon;
   final TextInputFormatter? formater;
   final bool? enableField;
-  final String? suffixText;
-  final Function? prettyText;
 
-  BreedInfoField({
-    required this.field,
-    required this.controller,
-    this.icon,
-    this.formater,
-    this.enableField,
-    this.suffixText,
-    this.prettyText,
-  });
+  UserInfoField(
+      {required this.field,
+      required this.controller,
+      this.icon,
+      this.formater,
+      this.enableField});
 }
 
-class BreedDetailScreen extends ConsumerStatefulWidget {
-  const BreedDetailScreen({super.key, required this.breedId});
+class LoginDetailScreen extends ConsumerStatefulWidget {
+  const LoginDetailScreen({super.key, required this.userId});
 
-  final String? breedId;
+  final String? userId;
   @override
-  ConsumerState<BreedDetailScreen> createState() => _BreedDetailScreenState();
+  ConsumerState<LoginDetailScreen> createState() => _LoginDetailScreenState();
 }
 
-class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
+class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _picker = ImagePicker();
 
-  final breedNameController = TextEditingController();
+  final nameController = TextEditingController();
 
-  final weightController = TextEditingController();
+  final lastNameController = TextEditingController();
 
-  final heightController = TextEditingController();
+  final emailController = TextEditingController();
 
-  final originController = TextEditingController();
+  final cityController = TextEditingController();
 
-  final lifeExpectancyController = TextEditingController();
+  final locationController = TextEditingController();
 
-  final descriptionController = TextEditingController();
+  final passwordController = TextEditingController();
 
-  late List<BreedInfoField> info;
+  final ageController = TextEditingController();
 
-  String _posterUrl1 = "";
+  late List<UserInfoField> info;
+
+  String _profileImage = "";
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref
-          .read(breedsDetailViewModelProvider.notifier)
-          .fetchBreed(widget.breedId);
-
-      breedNameController.addListener(
+          .read(loginDetailViewModelProvider.notifier)
+          .fetchUser(widget.userId);
+      nameController.addListener(
         () {
           ref
-              .read(breedsDetailViewModelProvider.notifier)
-              .updateBreedNameText(breedNameController.text);
+              .read(loginDetailViewModelProvider.notifier)
+              .updateNameText(nameController.text);
         },
       );
-      weightController.addListener(
+      lastNameController.addListener(
         () {
           ref
-              .read(breedsDetailViewModelProvider.notifier)
-              .updateWeightText(weightController.text);
+              .read(loginDetailViewModelProvider.notifier)
+              .updateLastNameText(lastNameController.text);
         },
       );
-      heightController.addListener(
+      emailController.addListener(
         () {
           ref
-              .read(breedsDetailViewModelProvider.notifier)
-              .updateHeightText(heightController.text);
+              .read(loginDetailViewModelProvider.notifier)
+              .updateEmailText(emailController.text);
         },
       );
-      originController.addListener(
+      cityController.addListener(
         () {
           ref
-              .read(breedsDetailViewModelProvider.notifier)
-              .updateOriginText(originController.text);
-        },
-      );
-
-      lifeExpectancyController.addListener(
-        () {
-          ref
-              .read(breedsDetailViewModelProvider.notifier)
-              .updateLifeExpectancyText(lifeExpectancyController.text);
-        },
-      );
-      descriptionController.addListener(
-        () {
-          ref
-              .read(breedsDetailViewModelProvider.notifier)
-              .updateDescriptionText(descriptionController.text);
+              .read(loginDetailViewModelProvider.notifier)
+              .updateCityText(cityController.text);
         },
       );
 
-      breedNameController.text =
-          ref.read(breedsDetailViewModelProvider).inputBreedName;
-      weightController.text =
-          ref.read(breedsDetailViewModelProvider).inputWeight;
-      heightController.text =
-          ref.read(breedsDetailViewModelProvider).inputHeight;
-      originController.text =
-          ref.read(breedsDetailViewModelProvider).inputOrigin;
-      lifeExpectancyController.text =
-          ref.read(breedsDetailViewModelProvider).inputLifeExpectancy;
-      descriptionController.text =
-          ref.read(breedsDetailViewModelProvider).inputDescription;
+      locationController.addListener(
+        () {
+          ref
+              .read(loginDetailViewModelProvider.notifier)
+              .updateLocationText(locationController.text);
+        },
+      );
+      passwordController.addListener(
+        () {
+          ref
+              .read(loginDetailViewModelProvider.notifier)
+              .updatePswText(passwordController.text);
+        },
+      );
+      ageController.addListener(
+        () {
+          ref
+              .read(loginDetailViewModelProvider.notifier)
+              .updateAgeText(ageController.text);
+        },
+      );
 
-      _posterUrl1 = ref.read(breedsDetailViewModelProvider).inputPosterUrl_1;
+      nameController.text = ref.read(loginDetailViewModelProvider).inputName;
+      lastNameController.text =
+          ref.read(loginDetailViewModelProvider).inputLastName;
+      emailController.text = ref.read(loginDetailViewModelProvider).inputEmail;
+      cityController.text = ref.read(loginDetailViewModelProvider).inputCity;
+      locationController.text =
+          ref.read(loginDetailViewModelProvider).inputLocation;
+      ageController.text = ref.read(loginDetailViewModelProvider).inputAge;
+      passwordController.text =
+          ref.read(loginDetailViewModelProvider).inputPassword;
+      _profileImage = ref.read(loginDetailViewModelProvider).inputProfileImage;
     });
     info = [
-      BreedInfoField(
+      UserInfoField(
           field: "Name",
-          controller: breedNameController,
+          controller: nameController,
           formater: AlphabeticInputFormatter(),
-          icon: const Icon(Icons.pets)),
-      BreedInfoField(
-          field: "Weight",
-          controller: weightController,
-          formater: NumericInputFormatter(),
-          icon: const Icon(Icons.fitness_center),
-          suffixText: ("kg"),
-          prettyText: prettyText),
-      BreedInfoField(
-          field: "Height",
-          controller: heightController,
-          formater: NumericInputFormatter(),
-          icon: const Icon(Icons.height),
-          suffixText: ("cm"),
-          prettyText: prettyText),
-      BreedInfoField(
-          field: "Origin",
-          controller: originController,
+          icon: const Icon(Icons.account_circle)),
+      UserInfoField(
+          field: "Last Name",
+          controller: lastNameController,
+          formater: AlphabeticInputFormatter()),
+      UserInfoField(
+          field: "Age",
+          controller: ageController,
+          formater: NumericInputFormatter()),
+      UserInfoField(
+          field: "Email",
+          controller: emailController,
+          icon: const Icon(Icons.alternate_email)),
+      UserInfoField(
+          field: "Location",
+          controller: locationController,
           formater: AlphabeticInputFormatter(),
-          icon: const Icon(Icons.public)),
-      BreedInfoField(
-          field: "Life Expectancy",
-          controller: lifeExpectancyController,
-          formater: NumericInputFormatter(),
-          icon: const Icon(Icons.access_time),
-          suffixText: ("years"),
-          prettyText: prettyText),
-      BreedInfoField(
-        field: "Description",
-        controller: descriptionController,
+          icon: const Icon(Icons.location_on_outlined)),
+      UserInfoField(
+        field: "City",
+        controller: cityController,
         formater: AlphabeticInputFormatter(),
-        icon: const Icon(Icons.notes),
       ),
+      UserInfoField(
+          field: "Password",
+          controller: passwordController,
+          enableField: widget.userId != null ? false : true),
     ];
-  }
-
-  void prettyText(TextEditingController textController, String value) {
-    // Remove any previous hyphen to avoid multiple hyphens
-    String cleanedValue = value.replaceAll('-', '');
-
-    if (cleanedValue.length > 2) {
-      // Insert hyphen after the second digit
-      cleanedValue =
-          cleanedValue.substring(0, 2) + '-' + cleanedValue.substring(2);
-    }
-
-    // Update the controller with the formatted value
-    textController.value = TextEditingValue(
-      text: cleanedValue,
-      selection: TextSelection.collapsed(offset: cleanedValue.length),
-    );
   }
 
   Future<void> updateProfileImage() async {
@@ -185,7 +162,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Choose Breed Photo"),
+          title: const Text("Choose Profile Photo"),
           content: SingleChildScrollView(
             child: ListBody(
               children: [
@@ -215,28 +192,28 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
     );
     if (pickedFile != null) {
       ref
-          .read(breedsDetailViewModelProvider.notifier)
-          .updatePosterUrl1(pickedFile.path);
+          .read(loginDetailViewModelProvider.notifier)
+          .updateProfileImage(pickedFile.path);
     }
   }
 
-  void updateAddBreed() {
-    ref.read(breedsDetailViewModelProvider.notifier).updateAddBreed();
+  void updateAddUser() {
+    ref.read(loginDetailViewModelProvider.notifier).updateAddUser();
   }
 
   @override
   Widget build(BuildContext context) {
     ref.listen(
-      breedsDetailViewModelProvider,
+      loginDetailViewModelProvider,
       (_, state) {
-        _posterUrl1 = state.inputPosterUrl_1;
+        _profileImage = state.inputProfileImage;
       },
     );
-    final state = ref.watch(breedsDetailViewModelProvider);
+    final state = ref.watch(loginDetailViewModelProvider);
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Breed Detail"),
+          title: const Text("User Profile"),
           centerTitle: true,
         ),
         body: state.screenState.when(
@@ -244,10 +221,10 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
             child: CircularProgressIndicator(),
           ),
           idle: () {
-            return _breedDetail();
+            return _loginDetail();
           },
           empty: () {
-            return _breedDetail();
+            return _loginDetail();
           },
           error: () => Center(
             child: Text('Error: ${state.error}'),
@@ -255,7 +232,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
         ));
   }
 
-  Widget _breedDetail() {
+  Widget _loginDetail() {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
@@ -276,11 +253,11 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                         shape: BoxShape.rectangle,
                         borderRadius: BorderRadius.circular(50),
                       ),
-                      child: (_posterUrl1 != "")
+                      child: (_profileImage != "")
                           ? ClipRRect(
                               borderRadius: BorderRadius.circular(50),
-                              child: Image.network(
-                                _posterUrl1,
+                              child: Image.file(
+                                File(_profileImage),
                                 width: 200,
                                 height: 200,
                                 fit: BoxFit.cover,
@@ -292,7 +269,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                                   .colorScheme
                                   .surfaceContainerHighest,
                               child: Icon(
-                                Icons.pets,
+                                Icons.account_circle,
                                 size: 100,
                                 color: Theme.of(context)
                                     .colorScheme
@@ -301,14 +278,12 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                             ),
                     ),
                   ),
-                  ...info.map((info) => BreedDetailView(
+                  ...info.map((info) => UserInfoView(
                         field: info.field,
                         textController: info.controller,
                         formater: info.formater,
                         icon: info.icon,
                         enableField: info.enableField,
-                        suffixText: info.suffixText,
-                        prettyText: info.prettyText,
                       )),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -326,7 +301,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                         child: ElevatedButton(
                             onPressed: () {
                               if (_formKey.currentState!.validate()) {
-                                updateAddBreed();
+                                updateAddUser();
                                 Navigator.pop(context, true);
                               }
                             },
@@ -344,24 +319,20 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
   }
 }
 
-class BreedDetailView extends StatelessWidget {
-  const BreedDetailView({
+class UserInfoView extends StatelessWidget {
+  const UserInfoView({
     super.key,
     required this.field,
     required this.textController,
     this.icon,
     this.formater,
     this.enableField = true,
-    this.suffixText,
-    this.prettyText,
   });
   final String field;
   final bool? enableField;
   final TextEditingController textController;
   final Icon? icon;
   final TextInputFormatter? formater;
-  final String? suffixText;
-  final Function? prettyText;
 
   @override
   Widget build(BuildContext context) {
@@ -381,19 +352,12 @@ class BreedDetailView extends StatelessWidget {
               enabled: enableField,
               controller: textController,
               decoration: InputDecoration(
-                  labelText: field,
-                  border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10)),
-                  filled: false,
-                  suffixText: suffixText != null ? suffixText : null),
+                labelText: field,
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                filled: false,
+              ),
               inputFormatters: (formater != null) ? [formater!] : null,
-              onChanged: (value) {
-                if (prettyText == null) {
-                  return;
-                } else {
-                  prettyText!(textController, value);
-                }
-              },
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter some text';

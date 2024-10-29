@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "302517447687",
+    "project_id": "breeds-app-87309",
+    "storage_bucket": "breeds-app-87309.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:302517447687:android:64bc89a935cef3fb23cea2",
+        "android_client_info": {
+          "package_name": "com.example.parcial_1_pineiro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB51rhmZUm9fK8qJle8o45Msm-jUsgLIWM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
