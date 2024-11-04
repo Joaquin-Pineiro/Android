@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:firebase_auth/firebase_auth.dart' as auth;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:parcial_1_pineiro/data/providers.dart';
 import 'package:parcial_1_pineiro/domain/models/user.dart';
@@ -54,11 +55,12 @@ class LoginDetailNotifier extends Notifier<LoginDetailState> {
     }
   }
 
-  Future<void> updateAddUser() async {
+  Future<String?> updateAddUser() async {
     state = state.copyWith(screenState: BaseScreenState.loading);
     final userRepository = ref.read(usersRepositoryProvider);
     try {
       if (state.user != null) {
+        log("Actualizar Usuario");
         state = state.copyWith(
           user: User(
             id: state.user!.id,
@@ -76,31 +78,59 @@ class LoginDetailNotifier extends Notifier<LoginDetailState> {
         );
 
         userRepository.updateUser(state.user!);
+        return state.user!.id!;
       } else {
         log("Nuevo Usuario");
-        state = state.copyWith(
-          user: User(
-            id: null,
-            name: state.inputName,
-            lastName: state.inputLastName,
+        try {
+          final credential =
+              await auth.FirebaseAuth.instance.createUserWithEmailAndPassword(
             email: state.inputEmail,
-            age: state.inputAge,
-            location: state.inputLocation,
-            city: state.inputCity,
             password: state.inputPassword,
-            profileImg: state.inputProfileImage,
-          ),
-          screenState: BaseScreenState.idle,
-          error: '',
-        );
-        log("New user Email: ${state.user!.email}");
-        userRepository.insertUser(state.user!);
+          );
+          state = state.copyWith(
+            user: User(
+              id: credential.user!.uid,
+              name: state.inputName,
+              lastName: state.inputLastName,
+              email: state.inputEmail,
+              age: state.inputAge,
+              location: state.inputLocation,
+              city: state.inputCity,
+              password: state.inputPassword,
+              profileImg: state.inputProfileImage,
+            ),
+            screenState: BaseScreenState.idle,
+            error: '',
+          );
+          log("New user Email: ${state.user!.email}");
+
+          userRepository.insertUser(state.user!);
+          return state.user!.id!;
+        } on auth.FirebaseAuthException catch (e) {
+          state = state.copyWith(
+            screenState: BaseScreenState.error,
+            error: e.code.toString(),
+          );
+          return state.error;
+          // if (e.code == 'weak-password') {
+          //   print('The password provided is too weak.');
+          // } else if (e.code == 'email-already-in-use') {
+          //   print('The account already exists for that email.');
+          // }
+        } catch (e) {
+          state = state.copyWith(
+            screenState: BaseScreenState.error,
+            error: e.toString(),
+          );
+          return state.error;
+        }
       }
     } catch (e) {
       state = state.copyWith(
         screenState: BaseScreenState.error,
         error: e.toString(),
       );
+      return state.error;
     }
   }
 

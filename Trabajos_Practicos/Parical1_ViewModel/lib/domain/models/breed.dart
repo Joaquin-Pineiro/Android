@@ -38,7 +38,7 @@ class Breed {
   ) {
     final data = snapshot.data();
     return Breed(
-      id: snapshot.id,
+      id: data?['id'],
       breed: data?['breed'],
       weight: data?['weight'],
       height: data?['height'],
@@ -53,6 +53,7 @@ class Breed {
 
   Map<String, dynamic> toFirestore() {
     return {
+      "id": id,
       "breed": breed,
       "weight": weight,
       "height": height,

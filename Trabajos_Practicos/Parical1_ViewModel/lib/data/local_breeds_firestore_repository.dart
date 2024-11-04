@@ -69,6 +69,7 @@ class LocalBreedFirestoreRepository implements BreedsRepository {
 
     try {
       final docRef = await breedsCollection.add(breed);
+      await docRef.update({'id': docRef.id});
       log("Breed inserted successfully with document ID: ${docRef.id}");
     } catch (e) {
       log("Failed to insert breed: $e");
@@ -100,6 +101,45 @@ class LocalBreedFirestoreRepository implements BreedsRepository {
       log("Breed deleted successfully!");
     } catch (e) {
       log("Failed to delete breed: $e");
+    }
+  }
+
+  @override
+  Future<List<Breed>> filterBreeds(String filter) async {
+    //filter = filter.toLowerCase();
+    log('Filter: $filter');
+    final breedsCollection =
+        dataBaseFirestore.collection('breeds').withConverter<Breed>(
+              fromFirestore: Breed.fromFirestore,
+              toFirestore: (Breed breed, _) => breed.toFirestore(),
+            );
+
+    try {
+      // final documentSnap = await breedsCollection
+      //     .where('breed', isGreaterThanOrEqualTo: filter)
+      //     .where('breed', isLessThan: '$filter\uf8ff')
+      //     .get();
+      final documentSnap = await breedsCollection.get();
+      log('Total documents retrieved: ${documentSnap.docs.length}',
+          name: 'BreedsRepository');
+      final matchingBreeds = documentSnap.docs
+          .map((doc) => doc.data())
+          .where((breed) =>
+              breed.breed.toLowerCase().contains(filter.toLowerCase()))
+          .toList();
+      // final matchingBreeds = documentSnap.docs
+      //     .map((doc) => doc.data())
+      //     .where((breed) =>
+      //         breed.breed.contains(filter.))
+      // .toList();
+
+      log('Number of breeds fetched: ${matchingBreeds.length}',
+          name: 'BreedsRepository');
+      return matchingBreeds;
+    } catch (e, stackTrace) {
+      log('Error fetching breeds: $e', name: 'BreedsRepository');
+      log('StackTrace: $stackTrace', name: 'BreedsRepository');
+      return [];
     }
   }
 }

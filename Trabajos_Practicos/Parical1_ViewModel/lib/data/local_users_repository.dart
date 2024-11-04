@@ -59,8 +59,8 @@ class LocalUsersFirestoreRepository implements UsersRepository {
             );
 
     try {
-      final docRef = await usersCollection.add(user);
-      log("User inserted successfully with document ID: ${docRef.id}");
+      final docRef = await usersCollection.doc(user.id).set(user);
+      log("User inserted successfully with document ID: ${user.id}");
     } catch (e) {
       log("Failed to insert user: $e");
     }

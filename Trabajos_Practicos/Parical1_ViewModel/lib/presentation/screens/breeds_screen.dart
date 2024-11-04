@@ -15,14 +15,6 @@ class Destination {
   final Widget selectedIcon;
 }
 
-const List<Destination> destinations = <Destination>[
-  Destination(
-      'User Profile', Icon(Icons.widgets_outlined), Icon(Icons.widgets)),
-  Destination('Config', Icon(Icons.settings_outlined), Icon(Icons.settings)),
-  Destination(
-      'Log Out', Icon(Icons.logout_outlined), Icon(Icons.logout_outlined)),
-];
-
 class BreedsScreen extends ConsumerStatefulWidget {
   const BreedsScreen({required this.userId, super.key});
   final String userId;
@@ -35,6 +27,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
   final TextEditingController _inputFilter = TextEditingController();
   int selectedScreen = 0;
   String? filter;
+  late List<Destination> destinations;
   @override
   void initState() {
     super.initState();
@@ -49,6 +42,15 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
         },
       );
     });
+    final textsApp = ref.read(configViewModelProvider).textsApp;
+    destinations = <Destination>[
+      Destination(textsApp['User Profile']!, const Icon(Icons.widgets_outlined),
+          const Icon(Icons.widgets)),
+      Destination(textsApp['Settings']!, const Icon(Icons.settings_outlined),
+          const Icon(Icons.settings)),
+      Destination(textsApp['Log Out']!, const Icon(Icons.logout_outlined),
+          const Icon(Icons.logout_outlined)),
+    ];
   }
 
   void filterBreeds(String filter) {
@@ -63,13 +65,18 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
     ref.read(breedsViewModelProvider.notifier).fetchBreds();
   }
 
+  Future<bool> logOut() {
+    return ref.read(breedsViewModelProvider.notifier).logOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(breedsViewModelProvider);
+    final textsApp = ref.watch(configViewModelProvider).textsApp;
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Breeds"),
+          title: Text(textsApp["Dog Breeds"]!),
           centerTitle: true,
           leading: Builder(builder: (context) {
             return IconButton(
@@ -82,32 +89,34 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
         ),
         drawer: Builder(builder: (context) {
           return NavigationDrawer(
-            onDestinationSelected: (value) {
-              setState(() {
-                selectedScreen = value;
-                if (selectedScreen == 0) {
-                  selectedScreen = -1;
+            onDestinationSelected: (value) async {
+              selectedScreen = value;
+              if (selectedScreen == 0) {
+                selectedScreen = -1;
+                Scaffold.of(context).closeDrawer();
+                context.pushNamed('UserProfile', extra: widget.userId);
+              }
+              if (selectedScreen == 1) {
+                Scaffold.of(context).closeDrawer();
+                selectedScreen = -1;
+                context.goNamed('Config', extra: widget.userId);
+              }
+              if (selectedScreen == 2) {
+                selectedScreen = -1;
+                final result = await logOut();
+                if (result) {
                   Scaffold.of(context).closeDrawer();
-                  context.pushNamed('UserProfile', extra: widget.userId);
-                }
-                if (selectedScreen == 1) {
-                  Scaffold.of(context).closeDrawer();
-                  selectedScreen = -1;
-                  context.pushNamed('Config');
-                }
-                if (selectedScreen == 2) {
-                  selectedScreen = -1;
-                  Scaffold.of(context).closeDrawer();
+
                   context.goNamed('User');
                 }
-              });
+              }
             },
             selectedIndex: selectedScreen,
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(28, 16, 16, 10),
                 child: Text(
-                  'Menu',
+                  textsApp['Menu']!,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
               ),
@@ -132,7 +141,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
             child: CircularProgressIndicator(),
           ),
           idle: () {
-            return breeds(state.breeds);
+            return breeds(state.breeds, textsApp);
           },
           empty: () {
             return;
@@ -150,7 +159,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
         ));
   }
 
-  Widget breeds(List<Breed> breeds) {
+  Widget breeds(List<Breed> breeds, Map<String, String> textsApp) {
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -165,7 +174,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
               padding: const EdgeInsets.all(8.0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: 'Search',
+                  hintText: textsApp['Search']!,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10)),
                   prefixIcon: const Icon(Icons.search),
@@ -182,7 +191,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
                 },
               ),
             ),
-            chipControl(),
+            chipControl(textsApp),
             Expanded(
                 child: RefreshIndicator(
               onRefresh: () async => refresh(),
@@ -223,7 +232,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
                             : const Icon(Icons.pets),
                         title: Text(breed.breed),
                         subtitle: Text(
-                            "Weight: ${breed.weight}\nHeight: ${breed.height}\nOrigin: ${breed.origin}"),
+                            "${textsApp["Weight"]!}: ${breed.weight}\n${textsApp["Height"]!}: ${breed.height}\n${textsApp["Origin"]!}: ${breed.origin}"),
                         trailing: const Icon(Icons.arrow_forward_ios),
                       ),
                     ),
@@ -237,13 +246,13 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
     );
   }
 
-  Widget chipControl() {
+  Widget chipControl(Map<String, String> textsApp) {
     return Row(
       children: [
         Padding(
             padding: const EdgeInsets.all(8.0),
             child: ChoiceChip(
-              label: const Text("Weight"),
+              label: Text(textsApp["Weight"]!),
               selected: filter == "Filt Weight",
               onSelected: (bool selected) {
                 log("Filter: $filter");
@@ -258,7 +267,7 @@ class _BreedsScreenState extends ConsumerState<BreedsScreen> {
         Padding(
             padding: const EdgeInsets.all(8.0),
             child: ChoiceChip(
-              label: const Text("Height"),
+              label: Text(textsApp["Height"]!),
               selected: filter == "Filt Height",
               onSelected: (bool selected) {
                 filter = filter == "Filt Height" ? null : "Filt Height";

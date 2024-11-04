@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:encrypt_shared_preferences/provider.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:parcial_1_pineiro/config/router/app_router.dart';
@@ -13,6 +15,7 @@ late FirebaseFirestore dataBaseFirestore;
 void main() async {
   // Ensure that the binding is initialized
   WidgetsFlutterBinding.ensureInitialized();
+  await EncryptedSharedPreferences.initialize("0000000000000000");
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -32,6 +35,7 @@ class MainApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, ref) {
     final config = ref.watch(configViewModelProvider);
+    //ref.read(configViewModelProvider.notifier).restoreConfiguration();
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
       routerConfig: appRouter,

@@ -2,19 +2,22 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:parcial_1_pineiro/config/router/app_router.dart';
 import 'package:parcial_1_pineiro/presentation/utils/base_state_screen.dart';
 import 'package:parcial_1_pineiro/viewmodels/notifiers/config_notifier.dart';
 import 'package:parcial_1_pineiro/viewmodels/providers.dart';
 
 class ConfigScreen extends ConsumerStatefulWidget {
-  const ConfigScreen({super.key});
-
+  const ConfigScreen({super.key, required this.userId});
+  final String userId;
   @override
   ConsumerState<ConfigScreen> createState() => _ConfigScreenState();
 }
 
 class _ConfigScreenState extends ConsumerState<ConfigScreen> {
   int selectedColor = 0;
+  String selectedLanguaje = 'en';
   bool isDarkMode = true;
   @override
   void initState() {
@@ -22,7 +25,7 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
 
     selectedColor = ref.read(configViewModelProvider).selectedColor;
     isDarkMode = ref.read(configViewModelProvider).isDarkMode;
-    log("Selected Color in addPostFrameCallback $selectedColor");
+    selectedLanguaje = ref.read(configViewModelProvider).targetLanguage;
   }
 
   toggleDarkMode() {
@@ -31,6 +34,10 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
 
   changeColorScheme(int value) {
     ref.read(configViewModelProvider.notifier).changeColorScheme(value);
+  }
+
+  changeLanguage(String targetLanguage) {
+    ref.read(configViewModelProvider.notifier).translate(targetLanguage);
   }
 
   @override
@@ -43,18 +50,22 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
       (_, state) {
         selectedColor = state.selectedColor;
         isDarkMode = state.isDarkMode;
+        selectedLanguaje = state.targetLanguage;
       },
     );
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(state.textsApp['Settings']!),
+        leading: IconButton(
+            onPressed: () => context.goNamed('Breeds', extra: widget.userId),
+            icon: const Icon(Icons.arrow_back)),
       ),
       body: state.screenState.when(
         loading: () => const Center(
           child: CircularProgressIndicator(),
         ),
         idle: () {
-          return config();
+          return config(state.textsApp);
         },
         empty: () {
           return;
@@ -66,11 +77,11 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
     );
   }
 
-  Widget config() {
+  Widget config(Map<String, String> textsApp) {
     return ListView(
       children: [
         SwitchListTile(
-            title: const Text('Dark Mode'),
+            title: Text(textsApp['Dark Mode']!),
             value: isDarkMode,
             onChanged: (value) {
               toggleDarkMode();
@@ -79,9 +90,10 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
           thickness: 2,
         ),
         ExpansionTile(
-          title: const Text("Theme"),
+          title: Text(textsApp["App Theme"]!),
+          trailing: const Icon(Icons.format_color_fill),
           subtitle: Text(
-            "Color $selectedColor",
+            "${textsApp['Color']!} $selectedColor",
             style: TextStyle(color: colorList[selectedColor]),
           ),
           children: [
@@ -93,7 +105,7 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
                 itemBuilder: (context, index) {
                   return RadioListTile(
                     title: Text(
-                      "Color $index",
+                      "${textsApp['Color']!} $index",
                       style: TextStyle(color: colorList[index]),
                     ),
                     subtitle:
@@ -102,6 +114,33 @@ class _ConfigScreenState extends ConsumerState<ConfigScreen> {
                     groupValue: selectedColor,
                     onChanged: (value) {
                       changeColorScheme(value ?? 0);
+                    },
+                  );
+                },
+              ),
+            )
+          ],
+        ),
+        const Divider(
+          thickness: 2,
+        ),
+        ExpansionTile(
+          title: Text(textsApp["Language"]!),
+          subtitle: Text(selectedLanguaje),
+          trailing: const Icon(Icons.translate),
+          children: [
+            SizedBox(
+              height: 200,
+              child: ListView.builder(
+                shrinkWrap: true,
+                itemCount: languageList.length,
+                itemBuilder: (context, index) {
+                  return RadioListTile(
+                    title: Text(languageList[index]),
+                    value: languageCodeList[index],
+                    groupValue: selectedLanguaje,
+                    onChanged: (value) {
+                      changeLanguage(value ?? 'en');
                     },
                   );
                 },

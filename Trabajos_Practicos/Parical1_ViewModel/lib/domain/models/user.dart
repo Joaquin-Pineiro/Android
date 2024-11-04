@@ -31,7 +31,7 @@ class User {
   ) {
     final data = snapshot.data();
     return User(
-      id: snapshot.id,
+      id: data?['id'],
       name: data?['name'],
       lastName: data?['last_name'],
       email: data?['email'],
@@ -45,6 +45,7 @@ class User {
 
   Map<String, dynamic> toFirestore() {
     return {
+      "id": id,
       "name": name,
       "last_name": lastName,
       "email": email,

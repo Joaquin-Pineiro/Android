@@ -121,40 +121,41 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
 
       _posterUrl1 = ref.read(breedsDetailViewModelProvider).inputPosterUrl_1;
     });
+    final textsApp = ref.read(configViewModelProvider).textsApp;
     info = [
       BreedInfoField(
-          field: "Name",
+          field: textsApp["Name"]!,
           controller: breedNameController,
           formater: AlphabeticInputFormatter(),
           icon: const Icon(Icons.pets)),
       BreedInfoField(
-          field: "Weight",
+          field: textsApp["Weight"]!,
           controller: weightController,
           formater: NumericInputFormatter(),
           icon: const Icon(Icons.fitness_center),
           suffixText: ("kg"),
           prettyText: prettyText),
       BreedInfoField(
-          field: "Height",
+          field: textsApp["Height"]!,
           controller: heightController,
           formater: NumericInputFormatter(),
           icon: const Icon(Icons.height),
           suffixText: ("cm"),
           prettyText: prettyText),
       BreedInfoField(
-          field: "Origin",
+          field: textsApp["Origin"]!,
           controller: originController,
           formater: AlphabeticInputFormatter(),
           icon: const Icon(Icons.public)),
       BreedInfoField(
-          field: "Life Expectancy",
+          field: textsApp["Life Expectancy"]!,
           controller: lifeExpectancyController,
           formater: NumericInputFormatter(),
           icon: const Icon(Icons.access_time),
           suffixText: ("years"),
           prettyText: prettyText),
       BreedInfoField(
-        field: "Description",
+        field: textsApp["Description"]!,
         controller: descriptionController,
         formater: AlphabeticInputFormatter(),
         icon: const Icon(Icons.notes),
@@ -179,19 +180,19 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
     );
   }
 
-  Future<void> updateProfileImage() async {
+  Future<void> updateProfileImage(Map<String, String> textsApp) async {
     // Show a dialog to choose between camera or gallery
     final pickedFile = await showDialog<XFile?>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Choose Breed Photo"),
+          title: Text(textsApp["Choose Breed Photo"]!),
           content: SingleChildScrollView(
             child: ListBody(
               children: [
                 ListTile(
                   leading: const Icon(Icons.camera),
-                  title: const Text('Camera'),
+                  title: Text(textsApp['Camera']!),
                   onTap: () async {
                     final image =
                         await _picker.pickImage(source: ImageSource.camera);
@@ -200,7 +201,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.photo),
-                  title: const Text('Gallery'),
+                  title: Text(textsApp['Gallery']!),
                   onTap: () async {
                     final image =
                         await _picker.pickImage(source: ImageSource.gallery);
@@ -233,10 +234,10 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
       },
     );
     final state = ref.watch(breedsDetailViewModelProvider);
-
+    final textsApp = ref.watch(configViewModelProvider).textsApp;
     return Scaffold(
         appBar: AppBar(
-          title: const Text("Breed Detail"),
+          title: Text(textsApp["Dog Breed Detail"]!),
           centerTitle: true,
         ),
         body: state.screenState.when(
@@ -244,10 +245,10 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
             child: CircularProgressIndicator(),
           ),
           idle: () {
-            return _breedDetail();
+            return _breedDetail(textsApp);
           },
           empty: () {
-            return _breedDetail();
+            return _breedDetail(textsApp);
           },
           error: () => Center(
             child: Text('Error: ${state.error}'),
@@ -255,7 +256,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
         ));
   }
 
-  Widget _breedDetail() {
+  Widget _breedDetail(Map<String, String> textsApp) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
@@ -269,7 +270,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                 children: [
                   GestureDetector(
                     onTap: () {
-                      updateProfileImage();
+                      updateProfileImage(textsApp);
                     }, // Handle avatar tap
                     child: Container(
                       decoration: BoxDecoration(
@@ -309,6 +310,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                         enableField: info.enableField,
                         suffixText: info.suffixText,
                         prettyText: info.prettyText,
+                        textsApp: textsApp,
                       )),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -319,7 +321,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                             onPressed: () {
                               Navigator.pop(context, false);
                             },
-                            child: const Text("Cancel")),
+                            child: Text(textsApp["Cancel"]!)),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -330,7 +332,7 @@ class _BreedDetailScreenState extends ConsumerState<BreedDetailScreen> {
                                 Navigator.pop(context, true);
                               }
                             },
-                            child: const Text("Submit")),
+                            child: Text(textsApp["Submit"]!)),
                       )
                     ],
                   )
@@ -354,6 +356,7 @@ class BreedDetailView extends StatelessWidget {
     this.enableField = true,
     this.suffixText,
     this.prettyText,
+    required this.textsApp,
   });
   final String field;
   final bool? enableField;
@@ -362,6 +365,7 @@ class BreedDetailView extends StatelessWidget {
   final TextInputFormatter? formater;
   final String? suffixText;
   final Function? prettyText;
+  final Map<String, String> textsApp;
 
   @override
   Widget build(BuildContext context) {
@@ -396,7 +400,7 @@ class BreedDetailView extends StatelessWidget {
               },
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
+                  return textsApp['Please enter some text']!;
                 }
                 return null;
               },

@@ -6,4 +6,5 @@ abstract class BreedsRepository {
   Future<void> insertBreed(Breed breed);
   Future<void> updateBreed(Breed breed);
   Future<void> deleteBreed(Breed breed);
+  Future<List<Breed>> filterBreeds(String filter);
 }

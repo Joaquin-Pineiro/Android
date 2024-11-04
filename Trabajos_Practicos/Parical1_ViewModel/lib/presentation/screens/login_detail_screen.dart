@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:parcial_1_pineiro/config/router/app_router.dart';
 import 'package:parcial_1_pineiro/presentation/utils/base_state_screen.dart';
 import 'package:parcial_1_pineiro/presentation/utils/functions.dart';
 import 'package:parcial_1_pineiro/viewmodels/providers.dart';
@@ -13,13 +15,16 @@ class UserInfoField {
   final Icon? icon;
   final TextInputFormatter? formater;
   final bool? enableField;
+  final bool obscureText;
 
-  UserInfoField(
-      {required this.field,
-      required this.controller,
-      this.icon,
-      this.formater,
-      this.enableField});
+  UserInfoField({
+    required this.field,
+    required this.controller,
+    this.icon,
+    this.formater,
+    this.enableField,
+    required this.obscureText,
+  });
 }
 
 class LoginDetailScreen extends ConsumerStatefulWidget {
@@ -121,54 +126,62 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
           ref.read(loginDetailViewModelProvider).inputPassword;
       _profileImage = ref.read(loginDetailViewModelProvider).inputProfileImage;
     });
+    final textsApp = ref.read(configViewModelProvider).textsApp;
     info = [
       UserInfoField(
-          field: "Name",
+          field: textsApp['Name']!,
           controller: nameController,
           formater: AlphabeticInputFormatter(),
-          icon: const Icon(Icons.account_circle)),
+          icon: const Icon(Icons.account_circle),
+          obscureText: false),
       UserInfoField(
-          field: "Last Name",
+          field: textsApp["Last Name"]!,
           controller: lastNameController,
-          formater: AlphabeticInputFormatter()),
+          formater: AlphabeticInputFormatter(),
+          obscureText: false),
       UserInfoField(
-          field: "Age",
+          field: textsApp["Age"]!,
           controller: ageController,
-          formater: NumericInputFormatter()),
+          formater: NumericInputFormatter(),
+          obscureText: false),
       UserInfoField(
-          field: "Email",
+          field: textsApp["Email"]!,
           controller: emailController,
-          icon: const Icon(Icons.alternate_email)),
+          icon: const Icon(Icons.alternate_email),
+          enableField: widget.userId != null ? false : true,
+          obscureText: false),
       UserInfoField(
-          field: "Location",
+          field: textsApp["Location"]!,
           controller: locationController,
           formater: AlphabeticInputFormatter(),
-          icon: const Icon(Icons.location_on_outlined)),
+          icon: const Icon(Icons.location_on_outlined),
+          obscureText: false),
       UserInfoField(
-        field: "City",
-        controller: cityController,
-        formater: AlphabeticInputFormatter(),
-      ),
+          field: textsApp["City"]!,
+          controller: cityController,
+          formater: AlphabeticInputFormatter(),
+          obscureText: false),
       UserInfoField(
-          field: "Password",
+          field: textsApp["Password"]!,
           controller: passwordController,
-          enableField: widget.userId != null ? false : true),
+          enableField: widget.userId != null ? false : true,
+          obscureText: widget.userId != null ? true : false),
     ];
   }
 
   Future<void> updateProfileImage() async {
-    // Show a dialog to choose between camera or gallery
+    final textsApp = ref.read(configViewModelProvider).textsApp;
     final pickedFile = await showDialog<XFile?>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Choose Profile Photo"),
+          title: Text(textsApp["Choose Profile Photo"]!),
           content: SingleChildScrollView(
             child: ListBody(
               children: [
                 ListTile(
                   leading: const Icon(Icons.camera),
-                  title: const Text('Camera'),
+                  title: Text(textsApp['Camera']!),
                   onTap: () async {
                     final image =
                         await _picker.pickImage(source: ImageSource.camera);
@@ -177,7 +190,7 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.photo),
-                  title: const Text('Gallery'),
+                  title: Text(textsApp['Gallery']!),
                   onTap: () async {
                     final image =
                         await _picker.pickImage(source: ImageSource.gallery);
@@ -197,8 +210,10 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
     }
   }
 
-  void updateAddUser() {
-    ref.read(loginDetailViewModelProvider.notifier).updateAddUser();
+  Future<String?> updateAddUser() async {
+    return await ref
+        .read(loginDetailViewModelProvider.notifier)
+        .updateAddUser();
   }
 
   @override
@@ -210,10 +225,11 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
       },
     );
     final state = ref.watch(loginDetailViewModelProvider);
+    final textsApp = ref.watch(configViewModelProvider).textsApp;
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text("User Profile"),
+          title: Text(textsApp["User Profile"]!),
           centerTitle: true,
         ),
         body: state.screenState.when(
@@ -221,18 +237,18 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
             child: CircularProgressIndicator(),
           ),
           idle: () {
-            return _loginDetail();
+            return _loginDetail(textsApp);
           },
           empty: () {
-            return _loginDetail();
+            return _loginDetail(textsApp);
           },
-          error: () => Center(
-            child: Text('Error: ${state.error}'),
-          ),
+          error: () {
+            return _loginDetail(textsApp);
+          },
         ));
   }
 
-  Widget _loginDetail() {
+  Widget _loginDetail(Map<String, String> textsApp) {
     return GestureDetector(
       onTap: () => FocusScope.of(context).unfocus(),
       child: SingleChildScrollView(
@@ -284,6 +300,8 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
                         formater: info.formater,
                         icon: info.icon,
                         enableField: info.enableField,
+                        textsApp: textsApp,
+                        obscureText: info.obscureText,
                       )),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
@@ -294,18 +312,37 @@ class _LoginDetailScreenState extends ConsumerState<LoginDetailScreen> {
                             onPressed: () {
                               Navigator.pop(context, false);
                             },
-                            child: const Text("Cancel")),
+                            child: Text(textsApp["Cancel"]!)),
                       ),
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: ElevatedButton(
-                            onPressed: () {
+                            onPressed: () async {
                               if (_formKey.currentState!.validate()) {
-                                updateAddUser();
-                                Navigator.pop(context, true);
+                                final result = await updateAddUser();
+
+                                if (result == 'weak-password') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(textsApp[
+                                              'The password provided is too weak.']!)));
+                                } else if (result == 'email-already-in-use') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                          content: Text(textsApp[
+                                              'The account already exists for that email.']!)));
+                                } else if (result == 'invalid-email') {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text(textsApp[
+                                            'Invalid e-mail format']!)),
+                                  );
+                                } else {
+                                  context.goNamed('Breeds', extra: result);
+                                }
                               }
                             },
-                            child: const Text("Submit")),
+                            child: Text(textsApp["Submit"]!)),
                       )
                     ],
                   )
@@ -327,12 +364,16 @@ class UserInfoView extends StatelessWidget {
     this.icon,
     this.formater,
     this.enableField = true,
+    required this.textsApp,
+    required this.obscureText,
   });
   final String field;
   final bool? enableField;
   final TextEditingController textController;
   final Icon? icon;
   final TextInputFormatter? formater;
+  final Map<String, String> textsApp;
+  final bool obscureText;
 
   @override
   Widget build(BuildContext context) {
@@ -351,6 +392,7 @@ class UserInfoView extends StatelessWidget {
             child: TextFormField(
               enabled: enableField,
               controller: textController,
+              obscureText: obscureText,
               decoration: InputDecoration(
                 labelText: field,
                 border:
@@ -360,7 +402,7 @@ class UserInfoView extends StatelessWidget {
               inputFormatters: (formater != null) ? [formater!] : null,
               validator: (value) {
                 if (value == null || value.isEmpty) {
-                  return 'Please enter some text';
+                  return textsApp['Please enter some text'];
                 }
                 return null;
               },

@@ -8,15 +8,18 @@ class BreedsState {
   final List<Breed> sortedBreeds;
   final String error;
   final String inputFilter;
+  final bool lowHigh;
+  final String? typeFilter;
 
-  BreedsState({
-    required this.screenState,
-    required this.breeds,
-    required this.filteredBreeds,
-    required this.sortedBreeds,
-    required this.error,
-    required this.inputFilter,
-  });
+  BreedsState(
+      {required this.screenState,
+      required this.breeds,
+      required this.filteredBreeds,
+      required this.sortedBreeds,
+      required this.error,
+      required this.inputFilter,
+      required this.lowHigh,
+      this.typeFilter});
 
   factory BreedsState.initial() {
     return BreedsState(
@@ -26,6 +29,7 @@ class BreedsState {
       sortedBreeds: [],
       error: "",
       inputFilter: "",
+      lowHigh: false,
     );
   }
 
@@ -36,14 +40,17 @@ class BreedsState {
     List<Breed>? sortedBreeds,
     String? error,
     String? inputFilter,
+    bool? lowHigh,
+    String? typeFilter,
   }) {
     return BreedsState(
-      screenState: screenState ?? this.screenState,
-      breeds: breeds ?? this.breeds,
-      filteredBreeds: filteredBreeds ?? this.filteredBreeds,
-      sortedBreeds: sortedBreeds ?? this.sortedBreeds,
-      error: error ?? this.error,
-      inputFilter: inputFilter ?? this.inputFilter,
-    );
+        screenState: screenState ?? this.screenState,
+        breeds: breeds ?? this.breeds,
+        filteredBreeds: filteredBreeds ?? this.filteredBreeds,
+        sortedBreeds: sortedBreeds ?? this.sortedBreeds,
+        error: error ?? this.error,
+        inputFilter: inputFilter ?? this.inputFilter,
+        lowHigh: lowHigh ?? this.lowHigh,
+        typeFilter: typeFilter ?? this.typeFilter);
   }
 }

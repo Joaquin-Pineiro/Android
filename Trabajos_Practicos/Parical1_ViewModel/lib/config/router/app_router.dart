@@ -54,7 +54,8 @@ final GoRouter appRouter =
     name: 'Config',
     path: '/config',
     builder: (context, state) {
-      return const ConfigScreen();
+      final String userId = state.extra as String;
+      return ConfigScreen(userId: userId);
     },
   ),
 ]);

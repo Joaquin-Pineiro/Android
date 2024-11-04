@@ -30,19 +30,20 @@ class BreedsInfoScreen extends ConsumerStatefulWidget {
 class _BreedsInfoScreenState extends ConsumerState<BreedsInfoScreen> {
   final _pageController =
       PageController(initialPage: 0, viewportFraction: 1, keepPage: false);
+
   List<SlideInfo> slides = [
     SlideInfo(
-      title: 'Description',
+      title: "",
       caption: "",
       imageUrl: "",
     ),
     SlideInfo(
-      title: 'Stats',
+      title: "",
       caption: "",
       imageUrl: "",
     ),
     SlideInfo(
-      title: 'Life Expectancy',
+      title: "",
       caption: "",
       imageUrl: "",
     ),
@@ -55,84 +56,79 @@ class _BreedsInfoScreenState extends ConsumerState<BreedsInfoScreen> {
       await ref
           .read(breedsInfoViewModelProvider.notifier)
           .fetchBreed(widget.breedId);
-
-      slides = slides.map((slide) {
-        if (slide.title == 'Description') {
-          return SlideInfo(
-            title: slide.title,
-            caption: ref.read(breedsInfoViewModelProvider).breed!.description,
-            imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_1!,
-          );
-        } else if (slide.title == 'Stats') {
-          return SlideInfo(
-            title: slide.title,
-            caption:
-                "They can weigh between ${ref.read(breedsInfoViewModelProvider).breed!.weight} and grow up to ${ref.read(breedsInfoViewModelProvider).breed!.height}.",
-            imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_2!,
-          );
-        } else if (slide.title == 'Life Expectancy') {
-          return SlideInfo(
-            title: slide.title,
-            caption:
-                "Their life expectancy can range between ${ref.read(breedsInfoViewModelProvider).breed!.lifeExpectancy}.",
-            imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_3!,
-          );
-        } else {
-          return slide;
-        }
-      }).toList();
+      final textsApp = ref.read(configViewModelProvider).textsApp;
+      slides = [
+        SlideInfo(
+          title: textsApp['Description']!,
+          caption: ref.read(breedsInfoViewModelProvider).breed!.description,
+          imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_1!,
+        ),
+        SlideInfo(
+          title: textsApp['Stats']!,
+          caption:
+              "${textsApp['They can weigh between']!} ${ref.read(breedsInfoViewModelProvider).breed!.weight} ${textsApp['and grow up to']!} ${ref.read(breedsInfoViewModelProvider).breed!.height}.",
+          imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_2!,
+        ),
+        SlideInfo(
+          title: textsApp['Life Expectancy']!,
+          caption:
+              "${textsApp['Their life expectancy can range between']!} ${ref.read(breedsInfoViewModelProvider).breed!.lifeExpectancy}.",
+          imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_3!,
+        ),
+      ];
 
       log("NO ERROR 2");
     });
   }
 
-  Future<bool?> openDialog(BuildContext context) async {
+  Future<bool?> openDialog(
+      BuildContext context, Map<String, String> textsApp) async {
     return await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Are you sure?"),
+        title: Text(textsApp["Are you sure?"]!),
         actions: [
           FilledButton(
             onPressed: () {
               Navigator.pop(context, false);
             },
-            child: const Text("No"),
+            child: Text(textsApp["No"]!),
           ),
           TextButton(
             onPressed: () {
               delete();
               Navigator.pop(context, true);
             },
-            child: const Text("Yes"),
+            child: Text(textsApp["Yes"]!),
           ),
         ],
       ),
     );
   }
 
-  void refreshInfo() async {
+  void refreshInfo(Map<String, String> textsApp) async {
     await ref
         .read(breedsInfoViewModelProvider.notifier)
         .fetchBreed(widget.breedId);
     slides = slides.map((slide) {
-      if (slide.title == 'Description') {
+      if (slide.title == textsApp['Description']!) {
         return SlideInfo(
           title: slide.title,
           caption: ref.read(breedsInfoViewModelProvider).breed!.description,
           imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_1!,
         );
-      } else if (slide.title == 'Stats') {
+      } else if (slide.title == textsApp['Stats']!) {
         return SlideInfo(
           title: slide.title,
           caption:
-              "They can weigh between ${ref.read(breedsInfoViewModelProvider).breed!.weight} and grow up to ${ref.read(breedsInfoViewModelProvider).breed!.height}.",
+              "${textsApp['They can weigh between']!} ${ref.read(breedsInfoViewModelProvider).breed!.weight} ${textsApp['and grow up to']!} ${ref.read(breedsInfoViewModelProvider).breed!.height}.",
           imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_2!,
         );
-      } else if (slide.title == 'Life Expectancy') {
+      } else if (slide.title == textsApp['Life Expectancy']!) {
         return SlideInfo(
           title: slide.title,
           caption:
-              "Their life expectancy can range between ${ref.read(breedsInfoViewModelProvider).breed!.lifeExpectancy}.",
+              "${textsApp['Their life expectancy can range between']!} ${ref.read(breedsInfoViewModelProvider).breed!.lifeExpectancy}.",
           imageUrl: ref.read(breedsInfoViewModelProvider).breed!.posterUrl_3!,
         );
       } else {
@@ -150,17 +146,18 @@ class _BreedsInfoScreenState extends ConsumerState<BreedsInfoScreen> {
     ref.listen(breedsInfoViewModelProvider, (_, state) {});
 
     final state = ref.watch(breedsInfoViewModelProvider);
+    final textsApp = ref.watch(configViewModelProvider).textsApp;
 
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Breed Detail'),
+          title: Text(textsApp['Dog Breed Detail']!),
           actions: [
             PopupMenuButton<int>(
               icon: const Icon(Icons.more_vert),
               position: PopupMenuPosition.under,
               onSelected: (value) async {
                 if (value == 1) {
-                  bool? isDeleted = await openDialog(context);
+                  bool? isDeleted = await openDialog(context, textsApp);
                   if (isDeleted == true) {
                     Navigator.pop(context, true);
                   }
@@ -169,27 +166,27 @@ class _BreedsInfoScreenState extends ConsumerState<BreedsInfoScreen> {
                   final result = await context.pushNamed('BreedDetail',
                       extra: widget.breedId);
 
-                  result == true ? refreshInfo() : {null};
+                  result == true ? refreshInfo(textsApp) : {null};
                 }
               },
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 0, // A value to identify the button
                   child: Row(
                     children: [
-                      Icon(Icons.edit),
-                      SizedBox(width: 10),
-                      Text('Edit'),
+                      const Icon(Icons.edit),
+                      const SizedBox(width: 10),
+                      Text(textsApp['Edit']!),
                     ],
                   ),
                 ),
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 1,
                   child: Row(
                     children: [
-                      Icon(Icons.delete),
-                      SizedBox(width: 10),
-                      Text('Delete'),
+                      const Icon(Icons.delete),
+                      const SizedBox(width: 10),
+                      Text(textsApp['Delete']!),
                     ],
                   ),
                 ),
